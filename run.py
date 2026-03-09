@@ -1,9 +1,15 @@
 import json
 import os
 import sys
+import uuid
 
-# ၁။ key.json ဖိုင်ထဲက ID ကို ဖတ်တဲ့အပိုင်း
-def get_user_id():
+# ၁။ ဖုန်းရဲ့ Unique ID ကို ထုတ်ယူခြင်း (သို့မဟုတ် Random ID တစ်ခု သတ်မှတ်ခြင်း)
+def get_device_id():
+    # ဒါက ဖုန်းတစ်လုံးချင်းစီအတွက် မတူညီတဲ့ ID တစ်ခု ထုတ်ပေးမှာပါ
+    return str(uuid.uuid4())[:8].upper()
+
+# ၂။ key.json ဖိုင်ထဲက ID ကို ဖတ်တဲ့အပိုင်း
+def get_stored_id():
     if os.path.exists('key.json'):
         try:
             with open('key.json', 'r') as f:
@@ -13,22 +19,29 @@ def get_user_id():
             return None
     return None
 
-# ၂။ ခွင့်ပြုထားတဲ့ ID စစ်ဆေးတဲ့အပိုင်း
-authorized_id = "COCO_SWT_789" # ဒီနေရာမှာ သင်ပေးချင်တဲ့ ID ကို ပြောင်းရေးပါ
-user_id = get_user_id()
+# ၃။ လုပ်ဆောင်ချက်အပိုင်း
+device_id = get_device_id()
+stored_id = get_stored_id()
+authorized_id = "SWT-COCO-1234" # သင် Approve ပေးမယ့် ID ကို ဒီမှာ ပြောင်းလို့ရပါတယ်
 
-if user_id == authorized_id:
-    print("✅ ID Approve ဖြစ်ပါသည်။ SWT Turbo ကို စတင်နေပါပြီ...")
-    
-    # ၃။ ID မှန်မှ .so ဖိုင်ကို Import လုပ်ပြီး Run မယ်
+if stored_id == authorized_id:
+    print("✅ ID Approved! SWT Turbo ကို စတင်နေပါပြီ...")
     try:
         import starlink
-        # starlink.so ထဲမှာပါတဲ့ function ကို ဒီမှာ လှမ်းခေါ်ပါ
-        # ဥပမာ- starlink.main() သို့မဟုတ် starlink.start()
+        # starlink.so ထဲက function ကို နှိုးပါ
     except Exception as e:
         print(f"❌ Error: {e}")
 else:
-    print("❌ Error: ID မရှိပါ သို့မဟုတ် Approve မရသေးပါ။")
-    print(f"သင့် ID: {user_id}")
+    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    print("❌ ACCESS DENIED (ဝင်ရောက်ခွင့် မရှိပါ)")
+    print(f"🔑 သင့်ရဲ့ ID: {device_id}") 
+    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    print("💡 အပေါ်က ID ကို ကူးပြီး Admin ဆီမှာ Approve တောင်းပါ။")
+    
+    # key.json မရှိရင် အလိုအလျောက် ဆောက်ပေးမယ့်အပိုင်း (User အတွက် အလွယ်တကူ)
+    if not os.path.exists('key.json'):
+        with open('key.json', 'w') as f:
+            json.dump({"id": ""}, f, indent=4)
+            
     sys.exit()
     
