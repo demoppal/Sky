@@ -1,51 +1,62 @@
 import json
 import os
 import sys
+import uuid
 
-# ၁။ User ရဲ့ key.json ထဲက ID ကို ဖတ်မယ်
-def get_user_id():
-    if not os.path.exists('key.json'):
-        # key.json မရှိရင် အသစ်ဆောက်ပေးပြီး ရပ်လိုက်မယ်
-        with open('key.json', 'w') as f:
-            json.dump({"id": ""}, f, indent=4)
-        return None
+# ၁။ User ရဲ့ ID ကို ဖတ်မယ် (မရှိရင် အသစ်ထုတ်ပေးမယ်)
+def get_or_create_id():
+    file_path = 'key.json'
+    
+    # ဖိုင်မရှိရင် သို့မဟုတ် ဖိုင်ထဲမှာ ID မရှိရင် ID အသစ်တစ်ခု သတ်မှတ်မယ်
+    if not os.path.exists(file_path):
+        new_id = str(uuid.uuid4())[:8].upper() # ဥပမာ: A52B1110 မျိုးထွက်လာမယ်
+        with open(file_path, 'w') as f:
+            json.dump({"id": new_id}, f, indent=4)
+        return new_id
     
     try:
-        with open('key.json', 'r') as f:
+        with open(file_path, 'r') as f:
             data = json.load(f)
-            return data.get("id", "").strip()
+            u_id = data.get("id", "").strip()
+            if not u_id: # ID ကွက်လပ်ဖြစ်နေရင်
+                u_id = str(uuid.uuid4())[:8].upper()
+                with open(file_path, 'w') as f:
+                    json.dump({"id": u_id}, f, indent=4)
+            return u_id
     except:
-        return None
+        return "ERROR_ID"
 
-# ၂။ Approved စာရင်းထဲမှာ ပါ၊ မပါ သေချာစစ်မယ်
-def is_approved(user_id):
-    if not user_id: # ID ဗလာဖြစ်နေရင် ပေးမဝင်ဘူး
-        return False
-        
-    if not os.path.exists('approved_ids.txt'):
-        # Approved ဖိုင်မရှိရင် ဘယ်သူ့ကိုမှ ပေးမဝင်ဘူး
+# ၂။ Approved စာရင်းကို စစ်ဆေးမယ်
+def check_approval(u_id):
+    approved_file = 'approved_ids.txt'
+    if not os.path.exists(approved_file):
         return False
     
-    with open('approved_ids.txt', 'r') as f:
-        # ID တစ်ခုချင်းစီကို ဖတ်ပြီး Space တွေဖြတ်မယ်
-        allowed_list = [line.strip() for line in f.readlines() if line.strip()]
-        return user_id in allowed_list
+    with open(approved_file, 'r') as f:
+        allowed = [line.strip() for line in f.readlines() if line.strip()]
+    return u_id in allowed
 
-# ၃။ ပင်မလုပ်ဆောင်ချက်
-user_id = get_user_id()
+# --- ပင်မလုပ်ဆောင်ချက် ---
+current_id = get_or_create_id()
 
-if is_approved(user_id):
-    print(f"✅ Access Granted: {user_id}")
+# မျက်နှာပြင်မှာ အမြဲတမ်း ID ကို အပေါ်ဆုံးကပြမယ်
+os.system('clear') # Screen ကို အရင်ရှင်းမယ်
+print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+print(f" 🔑 YOUR ID: {current_id}")
+print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+if check_approval(current_id):
+    print(" ✅ STATUS: APPROVED (အသုံးပြုနိုင်ပါပြီ)")
+    print(" 🚀 SWT Turbo စတင်နေပါပြီ...")
+    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    
     try:
         import starlink
-        # starlink.main()  # starlink.so ထဲက function ကို ဒီမှာ နှိုးပါ
+        # starlink.main() # .so ထဲက function ကို ဒီမှာနှိုးပါ
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f" ❌ Error: {e}")
 else:
-    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-    print("❌ ACCESS DENIED (ခွင့်ပြုချက်မရှိပါ)")
-    print(f"🔑 သင့် ID: {user_id if user_id else 'ID ထည့်သွင်းထားခြင်းမရှိပါ'}")
-    print("💡 အပေါ်က ID ကို Admin ဆီပို့ပြီး Approve တောင်းပါ။")
-    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-    sys.exit()
-    
+    print(" ❌ STATUS: NOT APPROVED (ခွင့်ပြုချက်မရသေးပါ)")
+    print(" 💡 အပေါ်က ID ကို ကူးပြီး Admin ဆီမှာ Approve တောင်းပါ။")
+    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    sys.exit() # ID မမှန်ရင် ဒီမှာတင် ရပ်သွားပါလိမ့်မယ်
