@@ -1,21 +1,27 @@
-import os
 import importlib.util
+import os
+import sys
 
-# 1. .so ဖိုင်အရှည်ကြီးရဲ့ နာမည်ကို သတ်မှတ်မယ်
-original_so = "myscript.cpython-313-aarch64-linux-android.so"
-target_so = "myscript.so"
+# ၁. ဖိုင်နာမည် အတိအကျကို ဒီမှာရေးထားတယ်
+so_file = "myscript.cpython-313-aarch64-linux-android.so"
 
-# 2. အကယ်၍ ဖိုင်နာမည်က အရှည်ကြီး ဖြစ်နေရင် အလွယ်ခေါ်လို့ရအောင် နာမည်ခဏပြောင်းမယ်
-if os.path.exists(original_so):
-    os.rename(original_so, target_so)
+def load_and_run():
+    if not os.path.exists(so_file):
+        print(f"Error: {so_file} ကို ရှာမတွေ့ပါ။")
+        return
 
-# 3. အခု myscript ဆိုပြီး ပုံမှန်အတိုင်း import လုပ်မယ်
-try:
-    import myscript
-    if __name__ == "__main__":
+    # ၂. .so ဖိုင်ကို တိုက်ရိုက် Load လုပ်တဲ့ process
+    spec = importlib.util.spec_from_file_location("myscript", os.path.abspath(so_file))
+    myscript = importlib.util.module_from_spec(spec)
+    sys.modules["myscript"] = myscript
+    
+    try:
+        spec.loader.exec_module(myscript)
+        # ၃. script ကို စတင် run မယ်
         myscript.main()
-except ImportError:
-    print("Error: .so file ကို ရှာမတွေ့ပါ။ GitHub ကနေ သေချာ pull လုပ်ထားလား စစ်ပေးပါ။")
-except Exception as e:
-    print(f"Error: {e}")
+    except Exception as e:
+        print(f"Error: {e}")
+
+if __name__ == "__main__":
+    load_and_run()
     
