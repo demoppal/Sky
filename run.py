@@ -1,35 +1,34 @@
 import sys
 import os
 
-# Core_script.so ကို ရှာလို့ရအောင် လက်ရှိ folder ကို path ထဲထည့်ခြင်း
+# လက်ရှိ folder ကို path ထဲထည့်ပေးခြင်းဖြင့် .so ဖိုင်ကို ရှာရလွယ်စေပါတယ်
 sys.path.append(os.getcwd())
 
 try:
-    # .so ဖိုင်နာမည် Core_script ဖြစ်တဲ့အတွက် Core_script ကို import လုပ်ပါမယ်
-    import Core_script 
+    # ဖိုင်နာမည် core_script.so ဖြစ်တဲ့အတွက် core_script ကို import လုပ်ပါမယ်
+    import core_script 
     
 except ImportError as e:
-    print("\033[31m" + "="*50)
-    print(f"[!] ERROR: 'Core_script.so' ဖိုင်ကို ရှာမတွေ့ပါ")
-    print(f"[!] ဖိုင်နာမည် မှန်မမှန် သို့မဟုတ် Folder တစ်ခုတည်းမှာ ရှိမရှိ စစ်ဆေးပါ")
-    print(f"[!] Details: {e}")
-    print("="*50 + "\033[0m")
+    print("\033[91m" + "!"*50)
+    print(f"[!] Error: 'core_script.so' ဖိုင်ကို ရှာမတွေ့ပါ")
+    print(f"[!] ဖိုင်နာမည်က {os.getcwd()} ထဲမှာ ရှိနေရပါမယ်")
+    print(f"[!] အမှားအသေးစိတ်: {e}")
+    print("!"*50 + "\033[0m")
     sys.exit(1)
 
-def launch():
+def start():
     try:
-        # Core_script.so ထဲက main() function ကို လှမ်းခေါ်တာပါ
-        # (သင့်မူရင်း script မှာ def main(): လို့ ပေးထားခဲ့ရင် ဒါက တန်းအလုပ်လုပ်ပါမယ်)
-        Core_script.main()
+        # .so ထဲက main() function ကို ခေါ်လိုက်တာပါ
+        core_script.main()
         
     except AttributeError:
-        print("\033[31m[!] Error: Core_script.so ထဲမှာ main() ဆိုတဲ့ function မတွေ့ပါဘူး\033[0m")
+        print("\033[91m[!] Error: .so ဖိုင်ထဲမှာ main() ဆိုတဲ့ function ကို ရှာမတွေ့ပါ\033[0m")
     except KeyboardInterrupt:
-        print("\n\033[33m[!] User က ပိတ်လိုက်ပါပြီ။ သွားပြီနော်...\033[0m")
+        print("\n\033[93m[!] Tool ကို ပိတ်လိုက်ပါပြီ\033[0m")
         sys.exit(0)
     except Exception as e:
-        print(f"\033[31m[!] Runtime Error: {e}\033[0m")
+        print(f"\033[91m[!] Runtime Error: {e}\033[0m")
 
 if __name__ == "__main__":
-    launch()
+    start()
     
